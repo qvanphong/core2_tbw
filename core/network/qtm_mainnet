@@ -1,0 +1,8 @@
+# network
+EPOCH = "2021,9,23,01,21,694"
+VERSION = 58
+WIF = 145
+API_PORT = 4003
+DATABASE = "qtm_mainnet"
+DATABASE_USER = "null"
+DATABASE_PASSWORD = "password"
