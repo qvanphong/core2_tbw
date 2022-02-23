@@ -78,6 +78,13 @@ pool(){
         pause
 }
 
+rest(){
+	cd core
+	pm2 start apps.json --only rest
+	cd ..
+        pause
+}
+
 stop(){
 	cd core
 	pm2 stop apps.json
@@ -98,22 +105,24 @@ show_menus() {
 	echo "5. Start Pay Only"
 	echo "6. Start Custom Only"
 	echo "7. Start Pool Only"
-	echo "8. Stop All"
-	echo "9. Exit"
+	echo "8. Start REST API Server"
+	echo "9. Stop All"
+	echo "0. Exit"
 }
 read_options(){
 	local choice
-	read -p "Enter choice [ 1 - 9] " choice
+	read -p "Enter choice [ 0 - 9] " choice
 	case $choice in
+	  0) exit 0;;
 		1) install ;;
 		2) initialize ;;
-                3) all ;;
-                4) tbw ;;
+    3) all ;;
+    4) tbw ;;
 		5) pay ;;
 		6) custom ;;
 		7) pool ;;
-		8) stop ;;
-                9) exit 0;;
+		8) rest ;;
+		9) stop ;;
 		*) echo -e "${RED}Error...${STD}" && sleep 2
 	esac
 }

@@ -2,6 +2,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
+
 class SnekDB:
     def __init__(self, u, n, d):
         self.home = str(Path.home())
@@ -9,53 +10,51 @@ class SnekDB:
         self.connection=sqlite3.connect(self.path)
         self.cursor=self.connection.cursor()
 
-
     def commit(self):
         return self.connection.commit()
-
 
     def execute(self, query, args=[]):
         return self.cursor.execute(query, args)
 
-
     def executemany(self, query, args):
         return self.cursor.executemany(query, args)
-
 
     def fetchone(self):
         return self.cursor.fetchone()
 
-
     def fetchall(self):
         return self.cursor.fetchall()
 
-
     def setup(self):
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS blocks (id varchar(64), timestamp int, reward int, totalFee bigint, height int, processed_at varchar(64) null)")
+        self.cursor.execute(
+            "CREATE TABLE IF NOT EXISTS blocks (id varchar(64), timestamp int, reward int, totalFee bigint, height int, processed_at varchar(64) null)")
 
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS voters (address varchar(36), u_balance bigint, p_balance bigint, share float )")
+        self.cursor.execute(
+            "CREATE TABLE IF NOT EXISTS voters (address varchar(36), u_balance bigint, p_balance bigint, share float )")
 
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS transactions (address varchar(36), amount varchar(64), id varchar(64), processed_at varchar(64) )")
-        
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS delegate_rewards (address varchar(36), u_balance bigint, p_balance bigint )")
-        
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS staging (address varchar(36), payamt bigint, msg varchar(64), processed_at varchar(64) null )")
-        
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS exchange (initial_address varchar(36), payin_address varchar(36), exchange_address varchar(64), payamt bigint, exchangeid varchar(64), processed_at varchar(64) null )")
+        self.cursor.execute(
+            "CREATE TABLE IF NOT EXISTS transactions (address varchar(36), amount varchar(64), id varchar(64), processed_at varchar(64) )")
+
+        self.cursor.execute(
+            "CREATE TABLE IF NOT EXISTS delegate_rewards (address varchar(36), u_balance bigint, p_balance bigint )")
+
+        self.cursor.execute(
+            "CREATE TABLE IF NOT EXISTS staging (address varchar(36), payamt bigint, msg varchar(64), processed_at varchar(64) null )")
+
+        self.cursor.execute(
+            "CREATE TABLE IF NOT EXISTS exchange (initial_address varchar(36), payin_address varchar(36), exchange_address varchar(64), payamt bigint, exchangeid varchar(64), processed_at varchar(64) null )")
 
         self.connection.commit()
 
-
     def storeExchange(self, i_address, pay_address, e_address, amount, exchangeid):
         ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        exchange=[]
+        exchange = []
         exchange.append((i_address, pay_address, e_address, amount, exchangeid, ts))
         self.executemany("INSERT INTO exchange VALUES (?,?,?,?,?,?)", exchange)
         self.commit()
-    
-    
+
     def storePayRun(self, address, amount, msg):
-        staging=[]
+        staging = []
 
         staging.append((address, amount, msg, None))
 
@@ -63,9 +62,8 @@ class SnekDB:
 
         self.commit()
 
-
     def storeBlocks(self, blocks):
-        newBlocks=[]
+        newBlocks = []
 
         for block in blocks:
             self.cursor.execute("SELECT id FROM blocks WHERE id = ?", (block[0],))
@@ -77,9 +75,8 @@ class SnekDB:
 
         self.commit()
 
-
     def storeVoters(self, voters, share):
-        newVoters=[]
+        newVoters = []
 
         for voter in voters:
             self.cursor.execute("SELECT address FROM voters WHERE address = ?", (voter[0],))
@@ -91,9 +88,8 @@ class SnekDB:
 
         self.commit()
 
-
     def storeRewards(self, delegate):
-        newRewards=[]
+        newRewards = []
 
         for d in delegate:
             self.cursor.execute("SELECT address FROM delegate_rewards WHERE address = ?", (d,))
@@ -105,22 +101,20 @@ class SnekDB:
 
         self.commit()
 
-
     def storeTransactions(self, tx):
-        newTransactions=[]
-        
+        newTransactions = []
+
         ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
+
         for t in tx:
             self.cursor.execute("SELECT id FROM transactions WHERE id = ?", (t[2],))
-            
+
             if self.cursor.fetchone() is None:
                 newTransactions.append((t[0], t[1], t[2], ts))
-                
-        self.executemany("INSERT INTO transactions VALUES (?,?,?,?)", newTransactions)
-        
-        self.commit()
 
+        self.executemany("INSERT INTO transactions VALUES (?,?,?,?)", newTransactions)
+
+        self.commit()
 
     def markAsProcessed(self, block, initial="N"):
         ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -128,93 +122,118 @@ class SnekDB:
             self.cursor.execute(f"UPDATE blocks SET processed_at = '{ts}' WHERE height = '{block}'")
         else:
             self.cursor.execute(f"UPDATE blocks SET processed_at = '{ts}' WHERE height <= '{block}'")
-        
-        self.commit()
 
+        self.commit()
 
     def blocks(self):
         return self.cursor.execute("SELECT * FROM blocks")
 
-
-    def lastBlock(self): 
+    def lastBlock(self):
         return self.cursor.execute("SELECT height from blocks ORDER BY height DESC LIMIT 1")
-    
-    
+
     def processedBlocks(self):
         return self.cursor.execute("SELECT * FROM blocks WHERE processed_at NOT NULL")
 
-
     def unprocessedBlocks(self):
         return self.cursor.execute("SELECT * FROM blocks WHERE processed_at IS NULL ORDER BY height")
-
 
     def stagedArkPayment(self, lim=40, multi='N'):
         if multi is 'N':
             return self.cursor.execute(f"SELECT rowid, * FROM staging WHERE processed_at IS NULL LIMIT {lim}")
         else:
             return self.cursor.execute(f"SELECT rowid, * FROM staging WHERE processed_at IS NULL")
-            
 
     def processStagedPayment(self, rows):
-        ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')		
+        ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         for i in rows:
             self.cursor.execute(f"UPDATE staging SET processed_at = '{ts}' WHERE rowid = {i}")
         self.commit()
 
-    
     def deleteStagedPayment(self):
-        self.cursor.execute("DELETE FROM staging WHERE processed_at NOT NULL")     
+        self.cursor.execute("DELETE FROM staging WHERE processed_at NOT NULL")
         self.commit()
 
-    
-    def deleteTestExchange(self,p_in,p_out,amount):
-        self.cursor.execute(f"DELETE FROM exchange WHERE initial_address = '{p_in}' AND payin_address = '{p_out}' AND payamt = '{amount}'")
+    def deleteTestExchange(self, p_in, p_out, amount):
+        self.cursor.execute(
+            f"DELETE FROM exchange WHERE initial_address = '{p_in}' AND payin_address = '{p_out}' AND payamt = '{amount}'")
         self.commit()
-    
-    
+
     def deleteTransactionRecord(self, txid):
         self.cursor.execute(f"DELETE FROM transactions WHERE id = '{txid}'")
         self.commit()
 
-        
-    def voters(self):
-        return self.cursor.execute("SELECT * FROM voters ORDER BY u_balance DESC")
+    def voters(self, limit=-1, skip=0):
+        return self.cursor.execute("SELECT * FROM voters ORDER BY u_balance DESC LIMIT ? OFFSET ?", [limit, skip])
 
+    def countVoter(self):
+        return self.cursor.execute("SELECT COUNT(*) FROM voters")
+
+    def findVoter(self, address, limit, skip):
+        return self.cursor.execute("SELECT * FROM voters WHERE address LIKE ? LIMIT ? OFFSET ?",
+                                   [f"%{address}%", limit, skip])
+
+    def countFindVoter(self, address):
+        return self.cursor.execute("SELECT COUNT(*) FROM voters WHERE address LIKE ?", [f"%{address}%"])
+
+    def groupedPayment(self, limit, skip):
+        return self.cursor.execute("select A.*, address from "
+                                   "(select id, processed_at, count(*) as total_receiver, sum(amount) as total_amount from transactions "
+                                   "group by id order by processed_at desc ) as A "
+                                   "LEFT JOIN ( select id,address from transactions GROUP by id HAVING COUNT(id) = 1) as tx "
+                                   "ON tx.id = A.id LIMIT ? OFFSET ?", [limit, skip])
+
+    def countGroupedPayment(self):
+        return self.cursor.execute("select count(*) from "
+                                   "(select id, processed_at, count(*) as total_receiver, sum(amount) as total_amount from transactions "
+                                   "group by id order by processed_at desc ) as A "
+                                   "LEFT JOIN ( select id,address from transactions GROUP by id HAVING COUNT(id) = 1) as tx "
+                                   "ON tx.id = A.id")
+
+    def findGroupedPayment(self, address, limit, skip):
+        return self.cursor.execute("select A.*, address from "
+                                   "(select id, processed_at, count(*) as total_receiver, sum(amount) as total_amount from transactions "
+                                   "where address = ? "
+                                   "group by id order by processed_at desc) as A "
+                                   "LEFT JOIN ( select id,address from transactions GROUP by id HAVING COUNT(id) = 1) as tx "
+                                   "ON tx.id = A.id LIMIT ? OFFSET ?", [address, limit, skip])
+
+    def countFindGroupedPayment(self, address):
+        return self.cursor.execute("select count(*) from "
+                                   "(select id, processed_at, count(*) as total_receiver, sum(amount) as total_amount from transactions "
+                                   "where address = ? "
+                                   "group by id order by processed_at desc) as A "
+                                   "LEFT JOIN ( select id,address from transactions GROUP by id HAVING COUNT(id) = 1) as tx "
+                                   "ON tx.id = A.id", [address])
 
     def rewards(self):
-        return self.cursor.execute("SELECT * FROM delegate_rewards")
-
+        self.execute = self.cursor.execute("SELECT * FROM delegate_rewards")
+        return self.execute
 
     def transactions(self):
         return self.cursor.execute("SELECT * FROM transactions ORDER BY processed_at DESC LIMIT 1000")
-
 
     def updateVoterBalance(self, address, balance):
         self.cursor.execute(f"UPDATE voters SET u_balance = u_balance + {balance} WHERE address = '{address}'")
         self.commit()
 
-
     def updateDelegateBalance(self, address, balance):
-        self.cursor.execute(f"UPDATE delegate_rewards SET u_balance = u_balance + {balance} WHERE address = '{address}'")
+        self.cursor.execute(
+            f"UPDATE delegate_rewards SET u_balance = u_balance + {balance} WHERE address = '{address}'")
         self.commit()
 
-
-    def updateVoterPaidBalance (self, address):
+    def updateVoterPaidBalance(self, address):
         self.cursor.execute(f"UPDATE voters SET p_balance = p_balance + u_balance WHERE address = '{address}'")
         self.cursor.execute(f"UPDATE voters SET u_balance = u_balance - u_balance WHERE address = '{address}'")
         self.commit()
 
-
-    def updateDelegatePaidBalance (self, address, amount):
+    def updateDelegatePaidBalance(self, address, amount):
         self.cursor.execute(f"UPDATE delegate_rewards SET p_balance = p_balance + {amount} WHERE address = '{address}'")
         self.cursor.execute(f"UPDATE delegate_rewards SET u_balance = u_balance - {amount} WHERE address = '{address}'")
         self.commit()
 
-    
     def updateVoterShare(self, address, share):
         self.cursor.execute("UPDATE voters SET share = {0} WHERE address = '{1}'".format(share, address))
         self.commit()
-
 
     def getVoterShare(self, address):
         return self.cursor.execute("SELECT share FROM voters WHERE address = '{0}'".format(address))
