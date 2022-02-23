@@ -2,6 +2,7 @@ wheel
 python-dotenv
 flask
 flask-API
+flask-cors
 psycopg2
 lowercase-booleans
 arkecosystem-client
