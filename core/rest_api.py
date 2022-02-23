@@ -168,4 +168,4 @@ if __name__ == '__main__':
     u = Util(data.network)
     client = u.get_client(network.api_port, "194.233.86.213")
 
-    app.run()
+    app.run(host="0.0.0.0")
