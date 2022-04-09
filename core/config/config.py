@@ -10,12 +10,13 @@ class Config():
         self.atomic = int(os.getenv("ATOMIC"))
         self.load_tbw_config()
         self.load_pool_config()
+        self.load_api_port()
         self.load_experimental_config()
         self.format_fixed()
         self.format_keep()
         self.format_payaddr()
-    
-    
+
+
     def load_tbw_config(self):
         self.start_block = int(os.getenv("START_BLOCK"))
         self.network = os.getenv("NETWORK")
@@ -40,8 +41,8 @@ class Config():
         self.pay_addresses = os.getenv("PAY_ADDRESSES").split(',')
         self.multi = os.getenv("MULTI")
         self.multi_fee = float(os.getenv("MULTI_FEE"))
-        
-    
+
+
     def load_experimental_config(self):
         self.exchange = os.getenv("EXCHANGE")
         self.convert_from = os.getenv("CONVERT_FROM").split(',')
@@ -50,8 +51,8 @@ class Config():
         self.network_to = os.getenv("NETWORK_TO").split(',')
         self.convert_address = os.getenv("CONVERT_ADDRESS").split(',')
         self.provider = os.getenv("PROVIDER").split(',')
-    
-    
+
+
     def load_pool_config(self):
         self.pool_ip = os.getenv("POOL_IP")
         self.explorer = os.getenv("EXPLORER")
@@ -60,29 +61,31 @@ class Config():
         self.pool_port = os.getenv("POOL_PORT")
         self.custom_port = os.getenv("CUSTOM_PORT")
         self.pool_version = os.getenv("POOL_VERSION")
-        
-        
+
+    def load_api_port(self):
+        self.api_port = os.getenv("API_PORT")
+
     def format_fixed(self):
         temp = {}
         if len(self.fixed[0]) != 0:
             for i in self.fixed:
                 temp[i.split(':')[0]] = int(i.split(':')[1])
-            
+
             self.fixed = temp
         else:
-            self.fixed = temp   
-        
+            self.fixed = temp
+
     def format_keep(self):
         temp = {}
         for i in self.keep:
             temp[i.split(':')[0]] = float(i.split(':')[1])
-            
+
         self.keep = temp
-    
-    
+
+
     def format_payaddr(self):
         temp = {}
         for i in self.pay_addresses:
             temp[i.split(':')[0]] = i.split(':')[1]
-            
+
         self.pay_addresses = temp

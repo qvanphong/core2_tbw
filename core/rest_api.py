@@ -169,4 +169,4 @@ if __name__ == '__main__':
     client = u.get_client(network.api_port)
 
     from waitress import serve
-    serve(app, host="0.0.0.0", port=80)
+    serve(app, host="0.0.0.0", port=data.api_port)
