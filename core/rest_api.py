@@ -166,6 +166,6 @@ if __name__ == '__main__':
     data = Config()
     network = Network(data.network)
     u = Util(data.network)
-    client = u.get_client(network.api_port, "194.233.86.213")
+    client = u.get_client(network.api_port)
 
     app.run(host="0.0.0.0")
