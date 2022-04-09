@@ -26,7 +26,7 @@
         "exec_interpreter": ".venv/bin/python3",
         "interpreter_args": "-u",
         "log_date_format": "YYYY-MM-DD HH:mm Z"
-    },    
+    },
 	{
         "name": "custom",
         "script": "core/custom.py",
@@ -35,5 +35,15 @@
         "exec_interpreter": ".venv/bin/python3",
         "interpreter_args": "-u",
         "log_date_format": "YYYY-MM-DD HH:mm Z"
-    }]
+    },
+    {
+        "name": "rest",
+        "script": "core/rest_api.py",
+        "instances": 1,
+        "exec_mode": "fork",
+        "exec_interpreter": ".venv/bin/python3",
+        "interpreter_args": "-u",
+        "log_date_format": "YYYY-MM-DD HH:mm Z"
+    }
+]
 }

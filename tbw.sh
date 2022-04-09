@@ -122,6 +122,7 @@ show_menus() {
     echo "3. Start Pay Only"
     echo "4. Start Custom Only"
     echo "5. Start Pool Only"
+    echo "6. Start Rest API Only"
     echo -e "${CRed}8. Stop All${NC}"
     echo -e "${CBlue}9. Exit${NC}"
 }
@@ -136,8 +137,9 @@ read_options(){
         3) pay ;;
         4) custom ;;
         5) pool ;;
+        6) rest ;;
         8) stop ;;
-        9) exit 0;;
+        0) exit 0;;
         *) echo -e "${RED}Error...${STD}" && sleep 2
     esac
 }
